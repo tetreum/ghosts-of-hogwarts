@@ -1,0 +1,1194 @@
+Shader "Hidden/BlendModesOverlay" {
+Properties {
+ _MainTex ("Screen Blended", 2D) = "" { }
+ _Overlay ("Color", 2D) = "grey" { }
+}
+SubShader { 
+ Pass {
+  ZTest Always
+  ZWrite Off
+  Cull Off
+  Fog { Mode Off }
+  ColorMask RGB
+  GpuProgramID 1529
+Program "vp" {
+SubProgram "opengl " {
+"!!GLSL
+#ifdef VERTEX
+
+uniform vec4 _UV_Transform;
+varying vec2 xlv_TEXCOORD0;
+varying vec2 xlv_TEXCOORD0_1;
+void main ()
+{
+  vec2 tmpvar_1;
+  tmpvar_1.x = dot (gl_MultiTexCoord0.xy, _UV_Transform.xy);
+  tmpvar_1.y = dot (gl_MultiTexCoord0.xy, _UV_Transform.zw);
+  gl_Position = (gl_ModelViewProjectionMatrix * gl_Vertex);
+  xlv_TEXCOORD0 = tmpvar_1;
+  xlv_TEXCOORD0_1 = gl_MultiTexCoord0.xy;
+}
+
+
+#endif
+#ifdef FRAGMENT
+uniform sampler2D _Overlay;
+uniform sampler2D _MainTex;
+uniform float _Intensity;
+varying vec2 xlv_TEXCOORD0;
+varying vec2 xlv_TEXCOORD0_1;
+void main ()
+{
+  gl_FragData[0] = (texture2D (_MainTex, xlv_TEXCOORD0_1) + (texture2D (_Overlay, xlv_TEXCOORD0) * _Intensity));
+}
+
+
+#endif
+"
+}
+SubProgram "d3d9 " {
+Bind "vertex" Vertex
+Bind "texcoord" TexCoord0
+Matrix 0 [glstate_matrix_mvp]
+Vector 4 [_MainTex_TexelSize]
+Vector 5 [_UV_Transform]
+"vs_2_0
+def c6, 0, -2, 1, 0
+dcl_position v0
+dcl_texcoord v1
+dp4 oPos.x, c0, v0
+dp4 oPos.y, c1, v0
+dp4 oPos.z, c2, v0
+dp4 oPos.w, c3, v0
+mul r0, v1.xyxy, c5
+add oT0.x, r0.y, r0.x
+add r0.x, r0.w, r0.z
+mad r0.y, r0.x, c6.y, c6.z
+mov r1.x, c6.x
+slt r0.z, c4.y, r1.x
+mad oT0.y, r0.z, r0.y, r0.x
+mov oT1.xy, v1
+
+"
+}
+SubProgram "d3d11 " {
+Bind "vertex" Vertex
+Bind "texcoord" TexCoord0
+ConstBuffer "$Globals" 144
+Vector 112 [_MainTex_TexelSize]
+Vector 128 [_UV_Transform]
+ConstBuffer "UnityPerDraw" 336
+Matrix 0 [glstate_matrix_mvp]
+BindCB  "$Globals" 0
+BindCB  "UnityPerDraw" 1
+"vs_4_0
+eefiecedlgdfbopgbcccnncgkfbjalhplaofkjejabaaaaaalmacaaaaadaaaaaa
+cmaaaaaaiaaaaaaapaaaaaaaejfdeheoemaaaaaaacaaaaaaaiaaaaaadiaaaaaa
+aaaaaaaaaaaaaaaaadaaaaaaaaaaaaaaapapaaaaebaaaaaaaaaaaaaaaaaaaaaa
+adaaaaaaabaaaaaaadadaaaafaepfdejfeejepeoaafeeffiedepepfceeaaklkl
+epfdeheogiaaaaaaadaaaaaaaiaaaaaafaaaaaaaaaaaaaaaabaaaaaaadaaaaaa
+aaaaaaaaapaaaaaafmaaaaaaaaaaaaaaaaaaaaaaadaaaaaaabaaaaaaadamaaaa
+fmaaaaaaabaaaaaaaaaaaaaaadaaaaaaacaaaaaaadamaaaafdfgfpfagphdgjhe
+gjgpgoaafeeffiedepepfceeaaklklklfdeieefcmeabaaaaeaaaabaahbaaaaaa
+fjaaaaaeegiocaaaaaaaaaaaajaaaaaafjaaaaaeegiocaaaabaaaaaaaeaaaaaa
+fpaaaaadpcbabaaaaaaaaaaafpaaaaaddcbabaaaabaaaaaaghaaaaaepccabaaa
+aaaaaaaaabaaaaaagfaaaaaddccabaaaabaaaaaagfaaaaaddccabaaaacaaaaaa
+giaaaaacabaaaaaadiaaaaaipcaabaaaaaaaaaaafgbfbaaaaaaaaaaaegiocaaa
+abaaaaaaabaaaaaadcaaaaakpcaabaaaaaaaaaaaegiocaaaabaaaaaaaaaaaaaa
+agbabaaaaaaaaaaaegaobaaaaaaaaaaadcaaaaakpcaabaaaaaaaaaaaegiocaaa
+abaaaaaaacaaaaaakgbkbaaaaaaaaaaaegaobaaaaaaaaaaadcaaaaakpccabaaa
+aaaaaaaaegiocaaaabaaaaaaadaaaaaapgbpbaaaaaaaaaaaegaobaaaaaaaaaaa
+dbaaaaaibcaabaaaaaaaaaaabkiacaaaaaaaaaaaahaaaaaaabeaaaaaaaaaaaaa
+apaaaaaiccaabaaaaaaaaaaaegbabaaaabaaaaaaogikcaaaaaaaaaaaaiaaaaaa
+aaaaaaaiecaabaaaaaaaaaaabkaabaiaebaaaaaaaaaaaaaaabeaaaaaaaaaiadp
+dhaaaaajcccabaaaabaaaaaaakaabaaaaaaaaaaackaabaaaaaaaaaaabkaabaaa
+aaaaaaaaapaaaaaibccabaaaabaaaaaaegbabaaaabaaaaaaegiacaaaaaaaaaaa
+aiaaaaaadgaaaaafdccabaaaacaaaaaaegbabaaaabaaaaaadoaaaaab"
+}
+SubProgram "d3d11_9x " {
+Bind "vertex" Vertex
+Bind "texcoord" TexCoord0
+ConstBuffer "$Globals" 144
+Vector 112 [_MainTex_TexelSize]
+Vector 128 [_UV_Transform]
+ConstBuffer "UnityPerDraw" 336
+Matrix 0 [glstate_matrix_mvp]
+BindCB  "$Globals" 0
+BindCB  "UnityPerDraw" 1
+"vs_4_0_level_9_1
+eefiecedifhgeipbogehnlhmokeofkkpnnjddapcabaaaaaacmaeaaaaaeaaaaaa
+daaaaaaajmabaaaagiadaaaalmadaaaaebgpgodjgeabaaaageabaaaaaaacpopp
+ceabaaaaeaaaaaaaacaaceaaaaaadmaaaaaadmaaaaaaceaaabaadmaaaaaaahaa
+acaaabaaaaaaaaaaabaaaaaaaeaaadaaaaaaaaaaaaaaaaaaaaacpoppfbaaaaaf
+ahaaapkaaaaaaaaaaaaaaamaaaaaiadpaaaaaaaabpaaaaacafaaaaiaaaaaapja
+bpaaaaacafaaabiaabaaapjaafaaaaadaaaaapiaabaaeejaacaaoekaacaaaaad
+aaaaaboaaaaaffiaaaaaaaiaacaaaaadaaaaabiaaaaappiaaaaakkiaaeaaaaae
+aaaaaciaaaaaaaiaahaaffkaahaakkkaabaaaaacabaaabiaahaaaakaamaaaaad
+aaaaaeiaabaaffkaabaaaaiaaeaaaaaeaaaaacoaaaaakkiaaaaaffiaaaaaaaia
+afaaaaadaaaaapiaaaaaffjaaeaaoekaaeaaaaaeaaaaapiaadaaoekaaaaaaaja
+aaaaoeiaaeaaaaaeaaaaapiaafaaoekaaaaakkjaaaaaoeiaaeaaaaaeaaaaapia
+agaaoekaaaaappjaaaaaoeiaaeaaaaaeaaaaadmaaaaappiaaaaaoekaaaaaoeia
+abaaaaacaaaaammaaaaaoeiaabaaaaacabaaadoaabaaoejappppaaaafdeieefc
+meabaaaaeaaaabaahbaaaaaafjaaaaaeegiocaaaaaaaaaaaajaaaaaafjaaaaae
+egiocaaaabaaaaaaaeaaaaaafpaaaaadpcbabaaaaaaaaaaafpaaaaaddcbabaaa
+abaaaaaaghaaaaaepccabaaaaaaaaaaaabaaaaaagfaaaaaddccabaaaabaaaaaa
+gfaaaaaddccabaaaacaaaaaagiaaaaacabaaaaaadiaaaaaipcaabaaaaaaaaaaa
+fgbfbaaaaaaaaaaaegiocaaaabaaaaaaabaaaaaadcaaaaakpcaabaaaaaaaaaaa
+egiocaaaabaaaaaaaaaaaaaaagbabaaaaaaaaaaaegaobaaaaaaaaaaadcaaaaak
+pcaabaaaaaaaaaaaegiocaaaabaaaaaaacaaaaaakgbkbaaaaaaaaaaaegaobaaa
+aaaaaaaadcaaaaakpccabaaaaaaaaaaaegiocaaaabaaaaaaadaaaaaapgbpbaaa
+aaaaaaaaegaobaaaaaaaaaaadbaaaaaibcaabaaaaaaaaaaabkiacaaaaaaaaaaa
+ahaaaaaaabeaaaaaaaaaaaaaapaaaaaiccaabaaaaaaaaaaaegbabaaaabaaaaaa
+ogikcaaaaaaaaaaaaiaaaaaaaaaaaaaiecaabaaaaaaaaaaabkaabaiaebaaaaaa
+aaaaaaaaabeaaaaaaaaaiadpdhaaaaajcccabaaaabaaaaaaakaabaaaaaaaaaaa
+ckaabaaaaaaaaaaabkaabaaaaaaaaaaaapaaaaaibccabaaaabaaaaaaegbabaaa
+abaaaaaaegiacaaaaaaaaaaaaiaaaaaadgaaaaafdccabaaaacaaaaaaegbabaaa
+abaaaaaadoaaaaabejfdeheoemaaaaaaacaaaaaaaiaaaaaadiaaaaaaaaaaaaaa
+aaaaaaaaadaaaaaaaaaaaaaaapapaaaaebaaaaaaaaaaaaaaaaaaaaaaadaaaaaa
+abaaaaaaadadaaaafaepfdejfeejepeoaafeeffiedepepfceeaaklklepfdeheo
+giaaaaaaadaaaaaaaiaaaaaafaaaaaaaaaaaaaaaabaaaaaaadaaaaaaaaaaaaaa
+apaaaaaafmaaaaaaaaaaaaaaaaaaaaaaadaaaaaaabaaaaaaadamaaaafmaaaaaa
+abaaaaaaaaaaaaaaadaaaaaaacaaaaaaadamaaaafdfgfpfagphdgjhegjgpgoaa
+feeffiedepepfceeaaklklkl"
+}
+}
+Program "fp" {
+SubProgram "opengl " {
+"!!GLSL"
+}
+SubProgram "d3d9 " {
+Float 0 [_Intensity]
+SetTexture 0 [_Overlay] 2D 0
+SetTexture 1 [_MainTex] 2D 1
+"ps_2_0
+dcl t0.xy
+dcl t1.xy
+dcl_2d s0
+dcl_2d s1
+texld r0, t0, s0
+texld r1, t1, s1
+mad_pp r0, r0, c0.x, r1
+mov_pp oC0, r0
+
+"
+}
+SubProgram "d3d11 " {
+SetTexture 0 [_Overlay] 2D 0
+SetTexture 1 [_MainTex] 2D 1
+ConstBuffer "$Globals" 144
+Float 96 [_Intensity]
+BindCB  "$Globals" 0
+"ps_4_0
+eefiecediflkhkpafnloihgmpnlemcicafgcgjfcabaaaaaamiabaaaaadaaaaaa
+cmaaaaaajmaaaaaanaaaaaaaejfdeheogiaaaaaaadaaaaaaaiaaaaaafaaaaaaa
+aaaaaaaaabaaaaaaadaaaaaaaaaaaaaaapaaaaaafmaaaaaaaaaaaaaaaaaaaaaa
+adaaaaaaabaaaaaaadadaaaafmaaaaaaabaaaaaaaaaaaaaaadaaaaaaacaaaaaa
+adadaaaafdfgfpfagphdgjhegjgpgoaafeeffiedepepfceeaaklklklepfdeheo
+cmaaaaaaabaaaaaaaiaaaaaacaaaaaaaaaaaaaaaaaaaaaaaadaaaaaaaaaaaaaa
+apaaaaaafdfgfpfegbhcghgfheaaklklfdeieefcpaaaaaaaeaaaaaaadmaaaaaa
+fjaaaaaeegiocaaaaaaaaaaaahaaaaaafkaaaaadaagabaaaaaaaaaaafkaaaaad
+aagabaaaabaaaaaafibiaaaeaahabaaaaaaaaaaaffffaaaafibiaaaeaahabaaa
+abaaaaaaffffaaaagcbaaaaddcbabaaaabaaaaaagcbaaaaddcbabaaaacaaaaaa
+gfaaaaadpccabaaaaaaaaaaagiaaaaacacaaaaaaefaaaaajpcaabaaaaaaaaaaa
+egbabaaaabaaaaaaeghobaaaaaaaaaaaaagabaaaaaaaaaaaefaaaaajpcaabaaa
+abaaaaaaegbabaaaacaaaaaaeghobaaaabaaaaaaaagabaaaabaaaaaadcaaaaak
+pccabaaaaaaaaaaaegaobaaaaaaaaaaaagiacaaaaaaaaaaaagaaaaaaegaobaaa
+abaaaaaadoaaaaab"
+}
+SubProgram "d3d11_9x " {
+SetTexture 0 [_Overlay] 2D 0
+SetTexture 1 [_MainTex] 2D 1
+ConstBuffer "$Globals" 144
+Float 96 [_Intensity]
+BindCB  "$Globals" 0
+"ps_4_0_level_9_1
+eefiecedfdnhdgpeffjoolhaomoinkggnocapbcpabaaaaaaieacaaaaaeaaaaaa
+daaaaaaaoiaaaaaaoaabaaaafaacaaaaebgpgodjlaaaaaaalaaaaaaaaaacpppp
+hiaaaaaadiaaaaaaabaacmaaaaaadiaaaaaadiaaacaaceaaaaaadiaaaaaaaaaa
+abababaaaaaaagaaabaaaaaaaaaaaaaaaaacppppbpaaaaacaaaaaaiaaaaaadla
+bpaaaaacaaaaaaiaabaaadlabpaaaaacaaaaaajaaaaiapkabpaaaaacaaaaaaja
+abaiapkaecaaaaadaaaaapiaaaaaoelaaaaioekaecaaaaadabaaapiaabaaoela
+abaioekaaeaaaaaeaaaacpiaaaaaoeiaaaaaaakaabaaoeiaabaaaaacaaaicpia
+aaaaoeiappppaaaafdeieefcpaaaaaaaeaaaaaaadmaaaaaafjaaaaaeegiocaaa
+aaaaaaaaahaaaaaafkaaaaadaagabaaaaaaaaaaafkaaaaadaagabaaaabaaaaaa
+fibiaaaeaahabaaaaaaaaaaaffffaaaafibiaaaeaahabaaaabaaaaaaffffaaaa
+gcbaaaaddcbabaaaabaaaaaagcbaaaaddcbabaaaacaaaaaagfaaaaadpccabaaa
+aaaaaaaagiaaaaacacaaaaaaefaaaaajpcaabaaaaaaaaaaaegbabaaaabaaaaaa
+eghobaaaaaaaaaaaaagabaaaaaaaaaaaefaaaaajpcaabaaaabaaaaaaegbabaaa
+acaaaaaaeghobaaaabaaaaaaaagabaaaabaaaaaadcaaaaakpccabaaaaaaaaaaa
+egaobaaaaaaaaaaaagiacaaaaaaaaaaaagaaaaaaegaobaaaabaaaaaadoaaaaab
+ejfdeheogiaaaaaaadaaaaaaaiaaaaaafaaaaaaaaaaaaaaaabaaaaaaadaaaaaa
+aaaaaaaaapaaaaaafmaaaaaaaaaaaaaaaaaaaaaaadaaaaaaabaaaaaaadadaaaa
+fmaaaaaaabaaaaaaaaaaaaaaadaaaaaaacaaaaaaadadaaaafdfgfpfagphdgjhe
+gjgpgoaafeeffiedepepfceeaaklklklepfdeheocmaaaaaaabaaaaaaaiaaaaaa
+caaaaaaaaaaaaaaaaaaaaaaaadaaaaaaaaaaaaaaapaaaaaafdfgfpfegbhcghgf
+heaaklkl"
+}
+}
+ }
+ Pass {
+  ZTest Always
+  ZWrite Off
+  Cull Off
+  Fog { Mode Off }
+  ColorMask RGB
+  GpuProgramID 88020
+Program "vp" {
+SubProgram "opengl " {
+"!!GLSL
+#ifdef VERTEX
+
+uniform vec4 _UV_Transform;
+varying vec2 xlv_TEXCOORD0;
+varying vec2 xlv_TEXCOORD0_1;
+void main ()
+{
+  vec2 tmpvar_1;
+  tmpvar_1.x = dot (gl_MultiTexCoord0.xy, _UV_Transform.xy);
+  tmpvar_1.y = dot (gl_MultiTexCoord0.xy, _UV_Transform.zw);
+  gl_Position = (gl_ModelViewProjectionMatrix * gl_Vertex);
+  xlv_TEXCOORD0 = tmpvar_1;
+  xlv_TEXCOORD0_1 = gl_MultiTexCoord0.xy;
+}
+
+
+#endif
+#ifdef FRAGMENT
+uniform sampler2D _Overlay;
+uniform sampler2D _MainTex;
+uniform float _Intensity;
+varying vec2 xlv_TEXCOORD0;
+varying vec2 xlv_TEXCOORD0_1;
+void main ()
+{
+  gl_FragData[0] = (1.0 - ((1.0 - 
+    (texture2D (_Overlay, xlv_TEXCOORD0) * _Intensity)
+  ) * (1.0 - texture2D (_MainTex, xlv_TEXCOORD0_1))));
+}
+
+
+#endif
+"
+}
+SubProgram "d3d9 " {
+Bind "vertex" Vertex
+Bind "texcoord" TexCoord0
+Matrix 0 [glstate_matrix_mvp]
+Vector 4 [_MainTex_TexelSize]
+Vector 5 [_UV_Transform]
+"vs_2_0
+def c6, 0, -2, 1, 0
+dcl_position v0
+dcl_texcoord v1
+dp4 oPos.x, c0, v0
+dp4 oPos.y, c1, v0
+dp4 oPos.z, c2, v0
+dp4 oPos.w, c3, v0
+mul r0, v1.xyxy, c5
+add oT0.x, r0.y, r0.x
+add r0.x, r0.w, r0.z
+mad r0.y, r0.x, c6.y, c6.z
+mov r1.x, c6.x
+slt r0.z, c4.y, r1.x
+mad oT0.y, r0.z, r0.y, r0.x
+mov oT1.xy, v1
+
+"
+}
+SubProgram "d3d11 " {
+Bind "vertex" Vertex
+Bind "texcoord" TexCoord0
+ConstBuffer "$Globals" 144
+Vector 112 [_MainTex_TexelSize]
+Vector 128 [_UV_Transform]
+ConstBuffer "UnityPerDraw" 336
+Matrix 0 [glstate_matrix_mvp]
+BindCB  "$Globals" 0
+BindCB  "UnityPerDraw" 1
+"vs_4_0
+eefiecedlgdfbopgbcccnncgkfbjalhplaofkjejabaaaaaalmacaaaaadaaaaaa
+cmaaaaaaiaaaaaaapaaaaaaaejfdeheoemaaaaaaacaaaaaaaiaaaaaadiaaaaaa
+aaaaaaaaaaaaaaaaadaaaaaaaaaaaaaaapapaaaaebaaaaaaaaaaaaaaaaaaaaaa
+adaaaaaaabaaaaaaadadaaaafaepfdejfeejepeoaafeeffiedepepfceeaaklkl
+epfdeheogiaaaaaaadaaaaaaaiaaaaaafaaaaaaaaaaaaaaaabaaaaaaadaaaaaa
+aaaaaaaaapaaaaaafmaaaaaaaaaaaaaaaaaaaaaaadaaaaaaabaaaaaaadamaaaa
+fmaaaaaaabaaaaaaaaaaaaaaadaaaaaaacaaaaaaadamaaaafdfgfpfagphdgjhe
+gjgpgoaafeeffiedepepfceeaaklklklfdeieefcmeabaaaaeaaaabaahbaaaaaa
+fjaaaaaeegiocaaaaaaaaaaaajaaaaaafjaaaaaeegiocaaaabaaaaaaaeaaaaaa
+fpaaaaadpcbabaaaaaaaaaaafpaaaaaddcbabaaaabaaaaaaghaaaaaepccabaaa
+aaaaaaaaabaaaaaagfaaaaaddccabaaaabaaaaaagfaaaaaddccabaaaacaaaaaa
+giaaaaacabaaaaaadiaaaaaipcaabaaaaaaaaaaafgbfbaaaaaaaaaaaegiocaaa
+abaaaaaaabaaaaaadcaaaaakpcaabaaaaaaaaaaaegiocaaaabaaaaaaaaaaaaaa
+agbabaaaaaaaaaaaegaobaaaaaaaaaaadcaaaaakpcaabaaaaaaaaaaaegiocaaa
+abaaaaaaacaaaaaakgbkbaaaaaaaaaaaegaobaaaaaaaaaaadcaaaaakpccabaaa
+aaaaaaaaegiocaaaabaaaaaaadaaaaaapgbpbaaaaaaaaaaaegaobaaaaaaaaaaa
+dbaaaaaibcaabaaaaaaaaaaabkiacaaaaaaaaaaaahaaaaaaabeaaaaaaaaaaaaa
+apaaaaaiccaabaaaaaaaaaaaegbabaaaabaaaaaaogikcaaaaaaaaaaaaiaaaaaa
+aaaaaaaiecaabaaaaaaaaaaabkaabaiaebaaaaaaaaaaaaaaabeaaaaaaaaaiadp
+dhaaaaajcccabaaaabaaaaaaakaabaaaaaaaaaaackaabaaaaaaaaaaabkaabaaa
+aaaaaaaaapaaaaaibccabaaaabaaaaaaegbabaaaabaaaaaaegiacaaaaaaaaaaa
+aiaaaaaadgaaaaafdccabaaaacaaaaaaegbabaaaabaaaaaadoaaaaab"
+}
+SubProgram "d3d11_9x " {
+Bind "vertex" Vertex
+Bind "texcoord" TexCoord0
+ConstBuffer "$Globals" 144
+Vector 112 [_MainTex_TexelSize]
+Vector 128 [_UV_Transform]
+ConstBuffer "UnityPerDraw" 336
+Matrix 0 [glstate_matrix_mvp]
+BindCB  "$Globals" 0
+BindCB  "UnityPerDraw" 1
+"vs_4_0_level_9_1
+eefiecedifhgeipbogehnlhmokeofkkpnnjddapcabaaaaaacmaeaaaaaeaaaaaa
+daaaaaaajmabaaaagiadaaaalmadaaaaebgpgodjgeabaaaageabaaaaaaacpopp
+ceabaaaaeaaaaaaaacaaceaaaaaadmaaaaaadmaaaaaaceaaabaadmaaaaaaahaa
+acaaabaaaaaaaaaaabaaaaaaaeaaadaaaaaaaaaaaaaaaaaaaaacpoppfbaaaaaf
+ahaaapkaaaaaaaaaaaaaaamaaaaaiadpaaaaaaaabpaaaaacafaaaaiaaaaaapja
+bpaaaaacafaaabiaabaaapjaafaaaaadaaaaapiaabaaeejaacaaoekaacaaaaad
+aaaaaboaaaaaffiaaaaaaaiaacaaaaadaaaaabiaaaaappiaaaaakkiaaeaaaaae
+aaaaaciaaaaaaaiaahaaffkaahaakkkaabaaaaacabaaabiaahaaaakaamaaaaad
+aaaaaeiaabaaffkaabaaaaiaaeaaaaaeaaaaacoaaaaakkiaaaaaffiaaaaaaaia
+afaaaaadaaaaapiaaaaaffjaaeaaoekaaeaaaaaeaaaaapiaadaaoekaaaaaaaja
+aaaaoeiaaeaaaaaeaaaaapiaafaaoekaaaaakkjaaaaaoeiaaeaaaaaeaaaaapia
+agaaoekaaaaappjaaaaaoeiaaeaaaaaeaaaaadmaaaaappiaaaaaoekaaaaaoeia
+abaaaaacaaaaammaaaaaoeiaabaaaaacabaaadoaabaaoejappppaaaafdeieefc
+meabaaaaeaaaabaahbaaaaaafjaaaaaeegiocaaaaaaaaaaaajaaaaaafjaaaaae
+egiocaaaabaaaaaaaeaaaaaafpaaaaadpcbabaaaaaaaaaaafpaaaaaddcbabaaa
+abaaaaaaghaaaaaepccabaaaaaaaaaaaabaaaaaagfaaaaaddccabaaaabaaaaaa
+gfaaaaaddccabaaaacaaaaaagiaaaaacabaaaaaadiaaaaaipcaabaaaaaaaaaaa
+fgbfbaaaaaaaaaaaegiocaaaabaaaaaaabaaaaaadcaaaaakpcaabaaaaaaaaaaa
+egiocaaaabaaaaaaaaaaaaaaagbabaaaaaaaaaaaegaobaaaaaaaaaaadcaaaaak
+pcaabaaaaaaaaaaaegiocaaaabaaaaaaacaaaaaakgbkbaaaaaaaaaaaegaobaaa
+aaaaaaaadcaaaaakpccabaaaaaaaaaaaegiocaaaabaaaaaaadaaaaaapgbpbaaa
+aaaaaaaaegaobaaaaaaaaaaadbaaaaaibcaabaaaaaaaaaaabkiacaaaaaaaaaaa
+ahaaaaaaabeaaaaaaaaaaaaaapaaaaaiccaabaaaaaaaaaaaegbabaaaabaaaaaa
+ogikcaaaaaaaaaaaaiaaaaaaaaaaaaaiecaabaaaaaaaaaaabkaabaiaebaaaaaa
+aaaaaaaaabeaaaaaaaaaiadpdhaaaaajcccabaaaabaaaaaaakaabaaaaaaaaaaa
+ckaabaaaaaaaaaaabkaabaaaaaaaaaaaapaaaaaibccabaaaabaaaaaaegbabaaa
+abaaaaaaegiacaaaaaaaaaaaaiaaaaaadgaaaaafdccabaaaacaaaaaaegbabaaa
+abaaaaaadoaaaaabejfdeheoemaaaaaaacaaaaaaaiaaaaaadiaaaaaaaaaaaaaa
+aaaaaaaaadaaaaaaaaaaaaaaapapaaaaebaaaaaaaaaaaaaaaaaaaaaaadaaaaaa
+abaaaaaaadadaaaafaepfdejfeejepeoaafeeffiedepepfceeaaklklepfdeheo
+giaaaaaaadaaaaaaaiaaaaaafaaaaaaaaaaaaaaaabaaaaaaadaaaaaaaaaaaaaa
+apaaaaaafmaaaaaaaaaaaaaaaaaaaaaaadaaaaaaabaaaaaaadamaaaafmaaaaaa
+abaaaaaaaaaaaaaaadaaaaaaacaaaaaaadamaaaafdfgfpfagphdgjhegjgpgoaa
+feeffiedepepfceeaaklklkl"
+}
+}
+Program "fp" {
+SubProgram "opengl " {
+"!!GLSL"
+}
+SubProgram "d3d9 " {
+Float 0 [_Intensity]
+SetTexture 0 [_Overlay] 2D 0
+SetTexture 1 [_MainTex] 2D 1
+"ps_2_0
+def c1, 1, 0, 0, 0
+dcl t0.xy
+dcl t1.xy
+dcl_2d s0
+dcl_2d s1
+texld r0, t0, s0
+texld r1, t1, s1
+mov r2.w, c1.x
+mad r0, r0, -c0.x, r2.w
+add r1, -r1, c1.x
+mad_pp r0, r0, -r1, c1.x
+mov_pp oC0, r0
+
+"
+}
+SubProgram "d3d11 " {
+SetTexture 0 [_Overlay] 2D 0
+SetTexture 1 [_MainTex] 2D 1
+ConstBuffer "$Globals" 144
+Float 96 [_Intensity]
+BindCB  "$Globals" 0
+"ps_4_0
+eefiecedajlkklmlifkjaikefkjofpimlmghjbhaabaaaaaadiacaaaaadaaaaaa
+cmaaaaaajmaaaaaanaaaaaaaejfdeheogiaaaaaaadaaaaaaaiaaaaaafaaaaaaa
+aaaaaaaaabaaaaaaadaaaaaaaaaaaaaaapaaaaaafmaaaaaaaaaaaaaaaaaaaaaa
+adaaaaaaabaaaaaaadadaaaafmaaaaaaabaaaaaaaaaaaaaaadaaaaaaacaaaaaa
+adadaaaafdfgfpfagphdgjhegjgpgoaafeeffiedepepfceeaaklklklepfdeheo
+cmaaaaaaabaaaaaaaiaaaaaacaaaaaaaaaaaaaaaaaaaaaaaadaaaaaaaaaaaaaa
+apaaaaaafdfgfpfegbhcghgfheaaklklfdeieefcgaabaaaaeaaaaaaafiaaaaaa
+fjaaaaaeegiocaaaaaaaaaaaahaaaaaafkaaaaadaagabaaaaaaaaaaafkaaaaad
+aagabaaaabaaaaaafibiaaaeaahabaaaaaaaaaaaffffaaaafibiaaaeaahabaaa
+abaaaaaaffffaaaagcbaaaaddcbabaaaabaaaaaagcbaaaaddcbabaaaacaaaaaa
+gfaaaaadpccabaaaaaaaaaaagiaaaaacacaaaaaaefaaaaajpcaabaaaaaaaaaaa
+egbabaaaabaaaaaaeghobaaaaaaaaaaaaagabaaaaaaaaaaadcaaaaaopcaabaaa
+aaaaaaaaegaobaiaebaaaaaaaaaaaaaaagiacaaaaaaaaaaaagaaaaaaaceaaaaa
+aaaaiadpaaaaiadpaaaaiadpaaaaiadpefaaaaajpcaabaaaabaaaaaaegbabaaa
+acaaaaaaeghobaaaabaaaaaaaagabaaaabaaaaaaaaaaaaalpcaabaaaabaaaaaa
+egaobaiaebaaaaaaabaaaaaaaceaaaaaaaaaiadpaaaaiadpaaaaiadpaaaaiadp
+dcaaaaanpccabaaaaaaaaaaaegaobaiaebaaaaaaaaaaaaaaegaobaaaabaaaaaa
+aceaaaaaaaaaiadpaaaaiadpaaaaiadpaaaaiadpdoaaaaab"
+}
+SubProgram "d3d11_9x " {
+SetTexture 0 [_Overlay] 2D 0
+SetTexture 1 [_MainTex] 2D 1
+ConstBuffer "$Globals" 144
+Float 96 [_Intensity]
+BindCB  "$Globals" 0
+"ps_4_0_level_9_1
+eefiecedlbbhihppjakpkkgjjodjbjpnioenjombabaaaaaadmadaaaaaeaaaaaa
+daaaaaaadaabaaaajiacaaaaaiadaaaaebgpgodjpiaaaaaapiaaaaaaaaacpppp
+maaaaaaadiaaaaaaabaacmaaaaaadiaaaaaadiaaacaaceaaaaaadiaaaaaaaaaa
+abababaaaaaaagaaabaaaaaaaaaaaaaaaaacppppfbaaaaafabaaapkaaaaaiadp
+aaaaaaaaaaaaaaaaaaaaaaaabpaaaaacaaaaaaiaaaaaadlabpaaaaacaaaaaaia
+abaaadlabpaaaaacaaaaaajaaaaiapkabpaaaaacaaaaaajaabaiapkaecaaaaad
+aaaaapiaaaaaoelaaaaioekaecaaaaadabaaapiaabaaoelaabaioekaabaaaaac
+acaaaiiaabaaaakaaeaaaaaeaaaaapiaaaaaoeiaaaaaaakbacaappiaacaaaaad
+abaaapiaabaaoeibabaaaakaaeaaaaaeaaaacpiaaaaaoeiaabaaoeibabaaaaka
+abaaaaacaaaicpiaaaaaoeiappppaaaafdeieefcgaabaaaaeaaaaaaafiaaaaaa
+fjaaaaaeegiocaaaaaaaaaaaahaaaaaafkaaaaadaagabaaaaaaaaaaafkaaaaad
+aagabaaaabaaaaaafibiaaaeaahabaaaaaaaaaaaffffaaaafibiaaaeaahabaaa
+abaaaaaaffffaaaagcbaaaaddcbabaaaabaaaaaagcbaaaaddcbabaaaacaaaaaa
+gfaaaaadpccabaaaaaaaaaaagiaaaaacacaaaaaaefaaaaajpcaabaaaaaaaaaaa
+egbabaaaabaaaaaaeghobaaaaaaaaaaaaagabaaaaaaaaaaadcaaaaaopcaabaaa
+aaaaaaaaegaobaiaebaaaaaaaaaaaaaaagiacaaaaaaaaaaaagaaaaaaaceaaaaa
+aaaaiadpaaaaiadpaaaaiadpaaaaiadpefaaaaajpcaabaaaabaaaaaaegbabaaa
+acaaaaaaeghobaaaabaaaaaaaagabaaaabaaaaaaaaaaaaalpcaabaaaabaaaaaa
+egaobaiaebaaaaaaabaaaaaaaceaaaaaaaaaiadpaaaaiadpaaaaiadpaaaaiadp
+dcaaaaanpccabaaaaaaaaaaaegaobaiaebaaaaaaaaaaaaaaegaobaaaabaaaaaa
+aceaaaaaaaaaiadpaaaaiadpaaaaiadpaaaaiadpdoaaaaabejfdeheogiaaaaaa
+adaaaaaaaiaaaaaafaaaaaaaaaaaaaaaabaaaaaaadaaaaaaaaaaaaaaapaaaaaa
+fmaaaaaaaaaaaaaaaaaaaaaaadaaaaaaabaaaaaaadadaaaafmaaaaaaabaaaaaa
+aaaaaaaaadaaaaaaacaaaaaaadadaaaafdfgfpfagphdgjhegjgpgoaafeeffied
+epepfceeaaklklklepfdeheocmaaaaaaabaaaaaaaiaaaaaacaaaaaaaaaaaaaaa
+aaaaaaaaadaaaaaaaaaaaaaaapaaaaaafdfgfpfegbhcghgfheaaklkl"
+}
+}
+ }
+ Pass {
+  ZTest Always
+  ZWrite Off
+  Cull Off
+  Fog { Mode Off }
+  ColorMask RGB
+  GpuProgramID 196450
+Program "vp" {
+SubProgram "opengl " {
+"!!GLSL
+#ifdef VERTEX
+
+uniform vec4 _UV_Transform;
+varying vec2 xlv_TEXCOORD0;
+varying vec2 xlv_TEXCOORD0_1;
+void main ()
+{
+  vec2 tmpvar_1;
+  tmpvar_1.x = dot (gl_MultiTexCoord0.xy, _UV_Transform.xy);
+  tmpvar_1.y = dot (gl_MultiTexCoord0.xy, _UV_Transform.zw);
+  gl_Position = (gl_ModelViewProjectionMatrix * gl_Vertex);
+  xlv_TEXCOORD0 = tmpvar_1;
+  xlv_TEXCOORD0_1 = gl_MultiTexCoord0.xy;
+}
+
+
+#endif
+#ifdef FRAGMENT
+uniform sampler2D _Overlay;
+uniform sampler2D _MainTex;
+uniform float _Intensity;
+varying vec2 xlv_TEXCOORD0;
+varying vec2 xlv_TEXCOORD0_1;
+void main ()
+{
+  gl_FragData[0] = (texture2D (_MainTex, xlv_TEXCOORD0_1) * (texture2D (_Overlay, xlv_TEXCOORD0) * _Intensity));
+}
+
+
+#endif
+"
+}
+SubProgram "d3d9 " {
+Bind "vertex" Vertex
+Bind "texcoord" TexCoord0
+Matrix 0 [glstate_matrix_mvp]
+Vector 4 [_MainTex_TexelSize]
+Vector 5 [_UV_Transform]
+"vs_2_0
+def c6, 0, -2, 1, 0
+dcl_position v0
+dcl_texcoord v1
+dp4 oPos.x, c0, v0
+dp4 oPos.y, c1, v0
+dp4 oPos.z, c2, v0
+dp4 oPos.w, c3, v0
+mul r0, v1.xyxy, c5
+add oT0.x, r0.y, r0.x
+add r0.x, r0.w, r0.z
+mad r0.y, r0.x, c6.y, c6.z
+mov r1.x, c6.x
+slt r0.z, c4.y, r1.x
+mad oT0.y, r0.z, r0.y, r0.x
+mov oT1.xy, v1
+
+"
+}
+SubProgram "d3d11 " {
+Bind "vertex" Vertex
+Bind "texcoord" TexCoord0
+ConstBuffer "$Globals" 144
+Vector 112 [_MainTex_TexelSize]
+Vector 128 [_UV_Transform]
+ConstBuffer "UnityPerDraw" 336
+Matrix 0 [glstate_matrix_mvp]
+BindCB  "$Globals" 0
+BindCB  "UnityPerDraw" 1
+"vs_4_0
+eefiecedlgdfbopgbcccnncgkfbjalhplaofkjejabaaaaaalmacaaaaadaaaaaa
+cmaaaaaaiaaaaaaapaaaaaaaejfdeheoemaaaaaaacaaaaaaaiaaaaaadiaaaaaa
+aaaaaaaaaaaaaaaaadaaaaaaaaaaaaaaapapaaaaebaaaaaaaaaaaaaaaaaaaaaa
+adaaaaaaabaaaaaaadadaaaafaepfdejfeejepeoaafeeffiedepepfceeaaklkl
+epfdeheogiaaaaaaadaaaaaaaiaaaaaafaaaaaaaaaaaaaaaabaaaaaaadaaaaaa
+aaaaaaaaapaaaaaafmaaaaaaaaaaaaaaaaaaaaaaadaaaaaaabaaaaaaadamaaaa
+fmaaaaaaabaaaaaaaaaaaaaaadaaaaaaacaaaaaaadamaaaafdfgfpfagphdgjhe
+gjgpgoaafeeffiedepepfceeaaklklklfdeieefcmeabaaaaeaaaabaahbaaaaaa
+fjaaaaaeegiocaaaaaaaaaaaajaaaaaafjaaaaaeegiocaaaabaaaaaaaeaaaaaa
+fpaaaaadpcbabaaaaaaaaaaafpaaaaaddcbabaaaabaaaaaaghaaaaaepccabaaa
+aaaaaaaaabaaaaaagfaaaaaddccabaaaabaaaaaagfaaaaaddccabaaaacaaaaaa
+giaaaaacabaaaaaadiaaaaaipcaabaaaaaaaaaaafgbfbaaaaaaaaaaaegiocaaa
+abaaaaaaabaaaaaadcaaaaakpcaabaaaaaaaaaaaegiocaaaabaaaaaaaaaaaaaa
+agbabaaaaaaaaaaaegaobaaaaaaaaaaadcaaaaakpcaabaaaaaaaaaaaegiocaaa
+abaaaaaaacaaaaaakgbkbaaaaaaaaaaaegaobaaaaaaaaaaadcaaaaakpccabaaa
+aaaaaaaaegiocaaaabaaaaaaadaaaaaapgbpbaaaaaaaaaaaegaobaaaaaaaaaaa
+dbaaaaaibcaabaaaaaaaaaaabkiacaaaaaaaaaaaahaaaaaaabeaaaaaaaaaaaaa
+apaaaaaiccaabaaaaaaaaaaaegbabaaaabaaaaaaogikcaaaaaaaaaaaaiaaaaaa
+aaaaaaaiecaabaaaaaaaaaaabkaabaiaebaaaaaaaaaaaaaaabeaaaaaaaaaiadp
+dhaaaaajcccabaaaabaaaaaaakaabaaaaaaaaaaackaabaaaaaaaaaaabkaabaaa
+aaaaaaaaapaaaaaibccabaaaabaaaaaaegbabaaaabaaaaaaegiacaaaaaaaaaaa
+aiaaaaaadgaaaaafdccabaaaacaaaaaaegbabaaaabaaaaaadoaaaaab"
+}
+SubProgram "d3d11_9x " {
+Bind "vertex" Vertex
+Bind "texcoord" TexCoord0
+ConstBuffer "$Globals" 144
+Vector 112 [_MainTex_TexelSize]
+Vector 128 [_UV_Transform]
+ConstBuffer "UnityPerDraw" 336
+Matrix 0 [glstate_matrix_mvp]
+BindCB  "$Globals" 0
+BindCB  "UnityPerDraw" 1
+"vs_4_0_level_9_1
+eefiecedifhgeipbogehnlhmokeofkkpnnjddapcabaaaaaacmaeaaaaaeaaaaaa
+daaaaaaajmabaaaagiadaaaalmadaaaaebgpgodjgeabaaaageabaaaaaaacpopp
+ceabaaaaeaaaaaaaacaaceaaaaaadmaaaaaadmaaaaaaceaaabaadmaaaaaaahaa
+acaaabaaaaaaaaaaabaaaaaaaeaaadaaaaaaaaaaaaaaaaaaaaacpoppfbaaaaaf
+ahaaapkaaaaaaaaaaaaaaamaaaaaiadpaaaaaaaabpaaaaacafaaaaiaaaaaapja
+bpaaaaacafaaabiaabaaapjaafaaaaadaaaaapiaabaaeejaacaaoekaacaaaaad
+aaaaaboaaaaaffiaaaaaaaiaacaaaaadaaaaabiaaaaappiaaaaakkiaaeaaaaae
+aaaaaciaaaaaaaiaahaaffkaahaakkkaabaaaaacabaaabiaahaaaakaamaaaaad
+aaaaaeiaabaaffkaabaaaaiaaeaaaaaeaaaaacoaaaaakkiaaaaaffiaaaaaaaia
+afaaaaadaaaaapiaaaaaffjaaeaaoekaaeaaaaaeaaaaapiaadaaoekaaaaaaaja
+aaaaoeiaaeaaaaaeaaaaapiaafaaoekaaaaakkjaaaaaoeiaaeaaaaaeaaaaapia
+agaaoekaaaaappjaaaaaoeiaaeaaaaaeaaaaadmaaaaappiaaaaaoekaaaaaoeia
+abaaaaacaaaaammaaaaaoeiaabaaaaacabaaadoaabaaoejappppaaaafdeieefc
+meabaaaaeaaaabaahbaaaaaafjaaaaaeegiocaaaaaaaaaaaajaaaaaafjaaaaae
+egiocaaaabaaaaaaaeaaaaaafpaaaaadpcbabaaaaaaaaaaafpaaaaaddcbabaaa
+abaaaaaaghaaaaaepccabaaaaaaaaaaaabaaaaaagfaaaaaddccabaaaabaaaaaa
+gfaaaaaddccabaaaacaaaaaagiaaaaacabaaaaaadiaaaaaipcaabaaaaaaaaaaa
+fgbfbaaaaaaaaaaaegiocaaaabaaaaaaabaaaaaadcaaaaakpcaabaaaaaaaaaaa
+egiocaaaabaaaaaaaaaaaaaaagbabaaaaaaaaaaaegaobaaaaaaaaaaadcaaaaak
+pcaabaaaaaaaaaaaegiocaaaabaaaaaaacaaaaaakgbkbaaaaaaaaaaaegaobaaa
+aaaaaaaadcaaaaakpccabaaaaaaaaaaaegiocaaaabaaaaaaadaaaaaapgbpbaaa
+aaaaaaaaegaobaaaaaaaaaaadbaaaaaibcaabaaaaaaaaaaabkiacaaaaaaaaaaa
+ahaaaaaaabeaaaaaaaaaaaaaapaaaaaiccaabaaaaaaaaaaaegbabaaaabaaaaaa
+ogikcaaaaaaaaaaaaiaaaaaaaaaaaaaiecaabaaaaaaaaaaabkaabaiaebaaaaaa
+aaaaaaaaabeaaaaaaaaaiadpdhaaaaajcccabaaaabaaaaaaakaabaaaaaaaaaaa
+ckaabaaaaaaaaaaabkaabaaaaaaaaaaaapaaaaaibccabaaaabaaaaaaegbabaaa
+abaaaaaaegiacaaaaaaaaaaaaiaaaaaadgaaaaafdccabaaaacaaaaaaegbabaaa
+abaaaaaadoaaaaabejfdeheoemaaaaaaacaaaaaaaiaaaaaadiaaaaaaaaaaaaaa
+aaaaaaaaadaaaaaaaaaaaaaaapapaaaaebaaaaaaaaaaaaaaaaaaaaaaadaaaaaa
+abaaaaaaadadaaaafaepfdejfeejepeoaafeeffiedepepfceeaaklklepfdeheo
+giaaaaaaadaaaaaaaiaaaaaafaaaaaaaaaaaaaaaabaaaaaaadaaaaaaaaaaaaaa
+apaaaaaafmaaaaaaaaaaaaaaaaaaaaaaadaaaaaaabaaaaaaadamaaaafmaaaaaa
+abaaaaaaaaaaaaaaadaaaaaaacaaaaaaadamaaaafdfgfpfagphdgjhegjgpgoaa
+feeffiedepepfceeaaklklkl"
+}
+}
+Program "fp" {
+SubProgram "opengl " {
+"!!GLSL"
+}
+SubProgram "d3d9 " {
+Float 0 [_Intensity]
+SetTexture 0 [_Overlay] 2D 0
+SetTexture 1 [_MainTex] 2D 1
+"ps_2_0
+dcl t0.xy
+dcl t1.xy
+dcl_2d s0
+dcl_2d s1
+texld r0, t0, s0
+texld r1, t1, s1
+mul_pp r0, r0, c0.x
+mul_pp r0, r0, r1
+mov_pp oC0, r0
+
+"
+}
+SubProgram "d3d11 " {
+SetTexture 0 [_Overlay] 2D 0
+SetTexture 1 [_MainTex] 2D 1
+ConstBuffer "$Globals" 144
+Float 96 [_Intensity]
+BindCB  "$Globals" 0
+"ps_4_0
+eefiecedfiaiffjnpbmenekfkclhgkaihdciklicabaaaaaanmabaaaaadaaaaaa
+cmaaaaaajmaaaaaanaaaaaaaejfdeheogiaaaaaaadaaaaaaaiaaaaaafaaaaaaa
+aaaaaaaaabaaaaaaadaaaaaaaaaaaaaaapaaaaaafmaaaaaaaaaaaaaaaaaaaaaa
+adaaaaaaabaaaaaaadadaaaafmaaaaaaabaaaaaaaaaaaaaaadaaaaaaacaaaaaa
+adadaaaafdfgfpfagphdgjhegjgpgoaafeeffiedepepfceeaaklklklepfdeheo
+cmaaaaaaabaaaaaaaiaaaaaacaaaaaaaaaaaaaaaaaaaaaaaadaaaaaaaaaaaaaa
+apaaaaaafdfgfpfegbhcghgfheaaklklfdeieefcaeabaaaaeaaaaaaaebaaaaaa
+fjaaaaaeegiocaaaaaaaaaaaahaaaaaafkaaaaadaagabaaaaaaaaaaafkaaaaad
+aagabaaaabaaaaaafibiaaaeaahabaaaaaaaaaaaffffaaaafibiaaaeaahabaaa
+abaaaaaaffffaaaagcbaaaaddcbabaaaabaaaaaagcbaaaaddcbabaaaacaaaaaa
+gfaaaaadpccabaaaaaaaaaaagiaaaaacacaaaaaaefaaaaajpcaabaaaaaaaaaaa
+egbabaaaabaaaaaaeghobaaaaaaaaaaaaagabaaaaaaaaaaadiaaaaaipcaabaaa
+aaaaaaaaegaobaaaaaaaaaaaagiacaaaaaaaaaaaagaaaaaaefaaaaajpcaabaaa
+abaaaaaaegbabaaaacaaaaaaeghobaaaabaaaaaaaagabaaaabaaaaaadiaaaaah
+pccabaaaaaaaaaaaegaobaaaaaaaaaaaegaobaaaabaaaaaadoaaaaab"
+}
+SubProgram "d3d11_9x " {
+SetTexture 0 [_Overlay] 2D 0
+SetTexture 1 [_MainTex] 2D 1
+ConstBuffer "$Globals" 144
+Float 96 [_Intensity]
+BindCB  "$Globals" 0
+"ps_4_0_level_9_1
+eefiecedoephofkmelkkbilcmcoaebmojigliodkabaaaaaakeacaaaaaeaaaaaa
+daaaaaaapeaaaaaaaaacaaaahaacaaaaebgpgodjlmaaaaaalmaaaaaaaaacpppp
+ieaaaaaadiaaaaaaabaacmaaaaaadiaaaaaadiaaacaaceaaaaaadiaaaaaaaaaa
+abababaaaaaaagaaabaaaaaaaaaaaaaaaaacppppbpaaaaacaaaaaaiaaaaaadla
+bpaaaaacaaaaaaiaabaaadlabpaaaaacaaaaaajaaaaiapkabpaaaaacaaaaaaja
+abaiapkaecaaaaadaaaaapiaaaaaoelaaaaioekaecaaaaadabaaapiaabaaoela
+abaioekaafaaaaadaaaacpiaaaaaoeiaaaaaaakaafaaaaadaaaacpiaaaaaoeia
+abaaoeiaabaaaaacaaaicpiaaaaaoeiappppaaaafdeieefcaeabaaaaeaaaaaaa
+ebaaaaaafjaaaaaeegiocaaaaaaaaaaaahaaaaaafkaaaaadaagabaaaaaaaaaaa
+fkaaaaadaagabaaaabaaaaaafibiaaaeaahabaaaaaaaaaaaffffaaaafibiaaae
+aahabaaaabaaaaaaffffaaaagcbaaaaddcbabaaaabaaaaaagcbaaaaddcbabaaa
+acaaaaaagfaaaaadpccabaaaaaaaaaaagiaaaaacacaaaaaaefaaaaajpcaabaaa
+aaaaaaaaegbabaaaabaaaaaaeghobaaaaaaaaaaaaagabaaaaaaaaaaadiaaaaai
+pcaabaaaaaaaaaaaegaobaaaaaaaaaaaagiacaaaaaaaaaaaagaaaaaaefaaaaaj
+pcaabaaaabaaaaaaegbabaaaacaaaaaaeghobaaaabaaaaaaaagabaaaabaaaaaa
+diaaaaahpccabaaaaaaaaaaaegaobaaaaaaaaaaaegaobaaaabaaaaaadoaaaaab
+ejfdeheogiaaaaaaadaaaaaaaiaaaaaafaaaaaaaaaaaaaaaabaaaaaaadaaaaaa
+aaaaaaaaapaaaaaafmaaaaaaaaaaaaaaaaaaaaaaadaaaaaaabaaaaaaadadaaaa
+fmaaaaaaabaaaaaaaaaaaaaaadaaaaaaacaaaaaaadadaaaafdfgfpfagphdgjhe
+gjgpgoaafeeffiedepepfceeaaklklklepfdeheocmaaaaaaabaaaaaaaiaaaaaa
+caaaaaaaaaaaaaaaaaaaaaaaadaaaaaaaaaaaaaaapaaaaaafdfgfpfegbhcghgf
+heaaklkl"
+}
+}
+ }
+ Pass {
+  ZTest Always
+  ZWrite Off
+  Cull Off
+  Fog { Mode Off }
+  ColorMask RGB
+  GpuProgramID 223542
+Program "vp" {
+SubProgram "opengl " {
+"!!GLSL
+#ifdef VERTEX
+
+uniform vec4 _UV_Transform;
+varying vec2 xlv_TEXCOORD0;
+varying vec2 xlv_TEXCOORD0_1;
+void main ()
+{
+  vec2 tmpvar_1;
+  tmpvar_1.x = dot (gl_MultiTexCoord0.xy, _UV_Transform.xy);
+  tmpvar_1.y = dot (gl_MultiTexCoord0.xy, _UV_Transform.zw);
+  gl_Position = (gl_ModelViewProjectionMatrix * gl_Vertex);
+  xlv_TEXCOORD0 = tmpvar_1;
+  xlv_TEXCOORD0_1 = gl_MultiTexCoord0.xy;
+}
+
+
+#endif
+#ifdef FRAGMENT
+uniform sampler2D _Overlay;
+uniform sampler2D _MainTex;
+uniform float _Intensity;
+varying vec2 xlv_TEXCOORD0;
+varying vec2 xlv_TEXCOORD0_1;
+void main ()
+{
+  vec4 tmpvar_1;
+  tmpvar_1 = texture2D (_Overlay, xlv_TEXCOORD0);
+  vec4 tmpvar_2;
+  tmpvar_2 = texture2D (_MainTex, xlv_TEXCOORD0_1);
+  float tmpvar_3;
+  tmpvar_3 = float((tmpvar_2.x >= 0.5));
+  vec4 tmpvar_4;
+  tmpvar_4.xyz = mix (tmpvar_2.xyz, ((vec3(tmpvar_3) * 
+    (vec3(1.0, 1.0, 1.0) - ((vec3(1.0, 1.0, 1.0) - (2.0 * 
+      (tmpvar_2.xyz - 0.5)
+    )) * (1.0 - tmpvar_1.xyz)))
+  ) + (
+    ((1.0 - vec3(tmpvar_3)) * (2.0 * tmpvar_2.xyz))
+   * tmpvar_1.xyz)), vec3(_Intensity));
+  tmpvar_4.w = tmpvar_2.w;
+  gl_FragData[0] = tmpvar_4;
+}
+
+
+#endif
+"
+}
+SubProgram "d3d9 " {
+Bind "vertex" Vertex
+Bind "texcoord" TexCoord0
+Matrix 0 [glstate_matrix_mvp]
+Vector 4 [_MainTex_TexelSize]
+Vector 5 [_UV_Transform]
+"vs_2_0
+def c6, 0, -2, 1, 0
+dcl_position v0
+dcl_texcoord v1
+dp4 oPos.x, c0, v0
+dp4 oPos.y, c1, v0
+dp4 oPos.z, c2, v0
+dp4 oPos.w, c3, v0
+mul r0, v1.xyxy, c5
+add oT0.x, r0.y, r0.x
+add r0.x, r0.w, r0.z
+mad r0.y, r0.x, c6.y, c6.z
+mov r1.x, c6.x
+slt r0.z, c4.y, r1.x
+mad oT0.y, r0.z, r0.y, r0.x
+mov oT1.xy, v1
+
+"
+}
+SubProgram "d3d11 " {
+Bind "vertex" Vertex
+Bind "texcoord" TexCoord0
+ConstBuffer "$Globals" 144
+Vector 112 [_MainTex_TexelSize]
+Vector 128 [_UV_Transform]
+ConstBuffer "UnityPerDraw" 336
+Matrix 0 [glstate_matrix_mvp]
+BindCB  "$Globals" 0
+BindCB  "UnityPerDraw" 1
+"vs_4_0
+eefiecedlgdfbopgbcccnncgkfbjalhplaofkjejabaaaaaalmacaaaaadaaaaaa
+cmaaaaaaiaaaaaaapaaaaaaaejfdeheoemaaaaaaacaaaaaaaiaaaaaadiaaaaaa
+aaaaaaaaaaaaaaaaadaaaaaaaaaaaaaaapapaaaaebaaaaaaaaaaaaaaaaaaaaaa
+adaaaaaaabaaaaaaadadaaaafaepfdejfeejepeoaafeeffiedepepfceeaaklkl
+epfdeheogiaaaaaaadaaaaaaaiaaaaaafaaaaaaaaaaaaaaaabaaaaaaadaaaaaa
+aaaaaaaaapaaaaaafmaaaaaaaaaaaaaaaaaaaaaaadaaaaaaabaaaaaaadamaaaa
+fmaaaaaaabaaaaaaaaaaaaaaadaaaaaaacaaaaaaadamaaaafdfgfpfagphdgjhe
+gjgpgoaafeeffiedepepfceeaaklklklfdeieefcmeabaaaaeaaaabaahbaaaaaa
+fjaaaaaeegiocaaaaaaaaaaaajaaaaaafjaaaaaeegiocaaaabaaaaaaaeaaaaaa
+fpaaaaadpcbabaaaaaaaaaaafpaaaaaddcbabaaaabaaaaaaghaaaaaepccabaaa
+aaaaaaaaabaaaaaagfaaaaaddccabaaaabaaaaaagfaaaaaddccabaaaacaaaaaa
+giaaaaacabaaaaaadiaaaaaipcaabaaaaaaaaaaafgbfbaaaaaaaaaaaegiocaaa
+abaaaaaaabaaaaaadcaaaaakpcaabaaaaaaaaaaaegiocaaaabaaaaaaaaaaaaaa
+agbabaaaaaaaaaaaegaobaaaaaaaaaaadcaaaaakpcaabaaaaaaaaaaaegiocaaa
+abaaaaaaacaaaaaakgbkbaaaaaaaaaaaegaobaaaaaaaaaaadcaaaaakpccabaaa
+aaaaaaaaegiocaaaabaaaaaaadaaaaaapgbpbaaaaaaaaaaaegaobaaaaaaaaaaa
+dbaaaaaibcaabaaaaaaaaaaabkiacaaaaaaaaaaaahaaaaaaabeaaaaaaaaaaaaa
+apaaaaaiccaabaaaaaaaaaaaegbabaaaabaaaaaaogikcaaaaaaaaaaaaiaaaaaa
+aaaaaaaiecaabaaaaaaaaaaabkaabaiaebaaaaaaaaaaaaaaabeaaaaaaaaaiadp
+dhaaaaajcccabaaaabaaaaaaakaabaaaaaaaaaaackaabaaaaaaaaaaabkaabaaa
+aaaaaaaaapaaaaaibccabaaaabaaaaaaegbabaaaabaaaaaaegiacaaaaaaaaaaa
+aiaaaaaadgaaaaafdccabaaaacaaaaaaegbabaaaabaaaaaadoaaaaab"
+}
+SubProgram "d3d11_9x " {
+Bind "vertex" Vertex
+Bind "texcoord" TexCoord0
+ConstBuffer "$Globals" 144
+Vector 112 [_MainTex_TexelSize]
+Vector 128 [_UV_Transform]
+ConstBuffer "UnityPerDraw" 336
+Matrix 0 [glstate_matrix_mvp]
+BindCB  "$Globals" 0
+BindCB  "UnityPerDraw" 1
+"vs_4_0_level_9_1
+eefiecedifhgeipbogehnlhmokeofkkpnnjddapcabaaaaaacmaeaaaaaeaaaaaa
+daaaaaaajmabaaaagiadaaaalmadaaaaebgpgodjgeabaaaageabaaaaaaacpopp
+ceabaaaaeaaaaaaaacaaceaaaaaadmaaaaaadmaaaaaaceaaabaadmaaaaaaahaa
+acaaabaaaaaaaaaaabaaaaaaaeaaadaaaaaaaaaaaaaaaaaaaaacpoppfbaaaaaf
+ahaaapkaaaaaaaaaaaaaaamaaaaaiadpaaaaaaaabpaaaaacafaaaaiaaaaaapja
+bpaaaaacafaaabiaabaaapjaafaaaaadaaaaapiaabaaeejaacaaoekaacaaaaad
+aaaaaboaaaaaffiaaaaaaaiaacaaaaadaaaaabiaaaaappiaaaaakkiaaeaaaaae
+aaaaaciaaaaaaaiaahaaffkaahaakkkaabaaaaacabaaabiaahaaaakaamaaaaad
+aaaaaeiaabaaffkaabaaaaiaaeaaaaaeaaaaacoaaaaakkiaaaaaffiaaaaaaaia
+afaaaaadaaaaapiaaaaaffjaaeaaoekaaeaaaaaeaaaaapiaadaaoekaaaaaaaja
+aaaaoeiaaeaaaaaeaaaaapiaafaaoekaaaaakkjaaaaaoeiaaeaaaaaeaaaaapia
+agaaoekaaaaappjaaaaaoeiaaeaaaaaeaaaaadmaaaaappiaaaaaoekaaaaaoeia
+abaaaaacaaaaammaaaaaoeiaabaaaaacabaaadoaabaaoejappppaaaafdeieefc
+meabaaaaeaaaabaahbaaaaaafjaaaaaeegiocaaaaaaaaaaaajaaaaaafjaaaaae
+egiocaaaabaaaaaaaeaaaaaafpaaaaadpcbabaaaaaaaaaaafpaaaaaddcbabaaa
+abaaaaaaghaaaaaepccabaaaaaaaaaaaabaaaaaagfaaaaaddccabaaaabaaaaaa
+gfaaaaaddccabaaaacaaaaaagiaaaaacabaaaaaadiaaaaaipcaabaaaaaaaaaaa
+fgbfbaaaaaaaaaaaegiocaaaabaaaaaaabaaaaaadcaaaaakpcaabaaaaaaaaaaa
+egiocaaaabaaaaaaaaaaaaaaagbabaaaaaaaaaaaegaobaaaaaaaaaaadcaaaaak
+pcaabaaaaaaaaaaaegiocaaaabaaaaaaacaaaaaakgbkbaaaaaaaaaaaegaobaaa
+aaaaaaaadcaaaaakpccabaaaaaaaaaaaegiocaaaabaaaaaaadaaaaaapgbpbaaa
+aaaaaaaaegaobaaaaaaaaaaadbaaaaaibcaabaaaaaaaaaaabkiacaaaaaaaaaaa
+ahaaaaaaabeaaaaaaaaaaaaaapaaaaaiccaabaaaaaaaaaaaegbabaaaabaaaaaa
+ogikcaaaaaaaaaaaaiaaaaaaaaaaaaaiecaabaaaaaaaaaaabkaabaiaebaaaaaa
+aaaaaaaaabeaaaaaaaaaiadpdhaaaaajcccabaaaabaaaaaaakaabaaaaaaaaaaa
+ckaabaaaaaaaaaaabkaabaaaaaaaaaaaapaaaaaibccabaaaabaaaaaaegbabaaa
+abaaaaaaegiacaaaaaaaaaaaaiaaaaaadgaaaaafdccabaaaacaaaaaaegbabaaa
+abaaaaaadoaaaaabejfdeheoemaaaaaaacaaaaaaaiaaaaaadiaaaaaaaaaaaaaa
+aaaaaaaaadaaaaaaaaaaaaaaapapaaaaebaaaaaaaaaaaaaaaaaaaaaaadaaaaaa
+abaaaaaaadadaaaafaepfdejfeejepeoaafeeffiedepepfceeaaklklepfdeheo
+giaaaaaaadaaaaaaaiaaaaaafaaaaaaaaaaaaaaaabaaaaaaadaaaaaaaaaaaaaa
+apaaaaaafmaaaaaaaaaaaaaaaaaaaaaaadaaaaaaabaaaaaaadamaaaafmaaaaaa
+abaaaaaaaaaaaaaaadaaaaaaacaaaaaaadamaaaafdfgfpfagphdgjhegjgpgoaa
+feeffiedepepfceeaaklklkl"
+}
+}
+Program "fp" {
+SubProgram "opengl " {
+"!!GLSL"
+}
+SubProgram "d3d9 " {
+Float 0 [_Intensity]
+SetTexture 0 [_Overlay] 2D 0
+SetTexture 1 [_MainTex] 2D 1
+"ps_2_0
+def c1, -0.5, 1, 0, 2
+dcl t0.xy
+dcl t1.xy
+dcl_2d s0
+dcl_2d s1
+texld_pp r0, t1, s1
+texld_pp r1, t0, s0
+add r2.xyz, r0, r0
+add r3.xyz, r0, c1.x
+cmp r4.xyz, r3, c1.z, c1.y
+mul r2.xyz, r2, r4
+mul r2.xyz, r1, r2
+add_pp r1.xyz, -r1, c1.y
+mad_pp r4.xyz, r3, -c1.w, c1.y
+cmp r3.xyz, r3, c1.y, c1.z
+mad r1.xyz, r4, -r1, c1.y
+mad r1.xyz, r3, r1, r2
+lrp_pp r2.xyz, c0.x, r1, r0
+mov_pp r2.w, r0.w
+mov_pp oC0, r2
+
+"
+}
+SubProgram "d3d11 " {
+SetTexture 0 [_Overlay] 2D 0
+SetTexture 1 [_MainTex] 2D 1
+ConstBuffer "$Globals" 144
+Float 96 [_Intensity]
+BindCB  "$Globals" 0
+"ps_4_0
+eefiecedapiegampmakkkdppgiiafjcofailmcejabaaaaaamiadaaaaadaaaaaa
+cmaaaaaajmaaaaaanaaaaaaaejfdeheogiaaaaaaadaaaaaaaiaaaaaafaaaaaaa
+aaaaaaaaabaaaaaaadaaaaaaaaaaaaaaapaaaaaafmaaaaaaaaaaaaaaaaaaaaaa
+adaaaaaaabaaaaaaadadaaaafmaaaaaaabaaaaaaaaaaaaaaadaaaaaaacaaaaaa
+adadaaaafdfgfpfagphdgjhegjgpgoaafeeffiedepepfceeaaklklklepfdeheo
+cmaaaaaaabaaaaaaaiaaaaaacaaaaaaaaaaaaaaaaaaaaaaaadaaaaaaaaaaaaaa
+apaaaaaafdfgfpfegbhcghgfheaaklklfdeieefcpaacaaaaeaaaaaaalmaaaaaa
+fjaaaaaeegiocaaaaaaaaaaaahaaaaaafkaaaaadaagabaaaaaaaaaaafkaaaaad
+aagabaaaabaaaaaafibiaaaeaahabaaaaaaaaaaaffffaaaafibiaaaeaahabaaa
+abaaaaaaffffaaaagcbaaaaddcbabaaaabaaaaaagcbaaaaddcbabaaaacaaaaaa
+gfaaaaadpccabaaaaaaaaaaagiaaaaacafaaaaaaefaaaaajpcaabaaaaaaaaaaa
+egbabaaaabaaaaaaeghobaaaaaaaaaaaaagabaaaaaaaaaaaefaaaaajpcaabaaa
+abaaaaaaegbabaaaacaaaaaaeghobaaaabaaaaaaaagabaaaabaaaaaabnaaaaak
+hcaabaaaacaaaaaaegacbaaaabaaaaaaaceaaaaaaaaaaadpaaaaaadpaaaaaadp
+aaaaaaaadhaaaaaphcaabaaaadaaaaaaegacbaaaacaaaaaaaceaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaaaaaaaaaceaaaaaaaaaiadpaaaaiadpaaaaiadpaaaaaaaa
+abaaaaakhcaabaaaacaaaaaaegacbaaaacaaaaaaaceaaaaaaaaaiadpaaaaiadp
+aaaaiadpaaaaaaaaaaaaaaahhcaabaaaaeaaaaaaegacbaaaabaaaaaaegacbaaa
+abaaaaaadiaaaaahhcaabaaaadaaaaaaegacbaaaadaaaaaaegacbaaaaeaaaaaa
+diaaaaahhcaabaaaadaaaaaaegacbaaaaaaaaaaaegacbaaaadaaaaaaaaaaaaal
+hcaabaaaaaaaaaaaegacbaiaebaaaaaaaaaaaaaaaceaaaaaaaaaiadpaaaaiadp
+aaaaiadpaaaaaaaaaaaaaaakhcaabaaaaeaaaaaaegacbaaaabaaaaaaaceaaaaa
+aaaaaalpaaaaaalpaaaaaalpaaaaaaaadcaaaabahcaabaaaaeaaaaaaegacbaia
+ebaaaaaaaeaaaaaaaceaaaaaaaaaaaeaaaaaaaeaaaaaaaeaaaaaaaaaaceaaaaa
+aaaaiadpaaaaiadpaaaaiadpaaaaaaaadcaaaaanhcaabaaaaaaaaaaaegacbaia
+ebaaaaaaaeaaaaaaegacbaaaaaaaaaaaaceaaaaaaaaaiadpaaaaiadpaaaaiadp
+aaaaaaaadcaaaaajhcaabaaaaaaaaaaaegacbaaaacaaaaaaegacbaaaaaaaaaaa
+egacbaaaadaaaaaaaaaaaaaihcaabaaaaaaaaaaaegacbaiaebaaaaaaabaaaaaa
+egacbaaaaaaaaaaadcaaaaakhccabaaaaaaaaaaaagiacaaaaaaaaaaaagaaaaaa
+egacbaaaaaaaaaaaegacbaaaabaaaaaadgaaaaaficcabaaaaaaaaaaadkaabaaa
+abaaaaaadoaaaaab"
+}
+SubProgram "d3d11_9x " {
+SetTexture 0 [_Overlay] 2D 0
+SetTexture 1 [_MainTex] 2D 1
+ConstBuffer "$Globals" 144
+Float 96 [_Intensity]
+BindCB  "$Globals" 0
+"ps_4_0_level_9_1
+eefiecedgedhimlhbcecelmdmljiangngifajocjabaaaaaafmafaaaaaeaaaaaa
+daaaaaaamaabaaaaliaeaaaaciafaaaaebgpgodjiiabaaaaiiabaaaaaaacpppp
+faabaaaadiaaaaaaabaacmaaaaaadiaaaaaadiaaacaaceaaaaaadiaaaaaaaaaa
+abababaaaaaaagaaabaaaaaaaaaaaaaaaaacppppfbaaaaafabaaapkaaaaaaalp
+aaaaiadpaaaaaaaaaaaaaaeabpaaaaacaaaaaaiaaaaaadlabpaaaaacaaaaaaia
+abaaadlabpaaaaacaaaaaajaaaaiapkabpaaaaacaaaaaajaabaiapkaecaaaaad
+aaaacpiaabaaoelaabaioekaecaaaaadabaacpiaaaaaoelaaaaioekaacaaaaad
+acaaahiaaaaaoeiaaaaaoeiaacaaaaadadaaahiaaaaaoeiaabaaaakafiaaaaae
+aeaaahiaadaaoeiaabaakkkaabaaffkaafaaaaadacaaahiaacaaoeiaaeaaoeia
+afaaaaadacaaahiaabaaoeiaacaaoeiaacaaaaadabaachiaabaaoeibabaaffka
+aeaaaaaeaeaachiaadaaoeiaabaappkbabaaffkafiaaaaaeadaaahiaadaaoeia
+abaaffkaabaakkkaaeaaaaaeabaaahiaaeaaoeiaabaaoeibabaaffkaaeaaaaae
+abaaahiaadaaoeiaabaaoeiaacaaoeiabcaaaaaeacaachiaaaaaaakaabaaoeia
+aaaaoeiaabaaaaacacaaciiaaaaappiaabaaaaacaaaicpiaacaaoeiappppaaaa
+fdeieefcpaacaaaaeaaaaaaalmaaaaaafjaaaaaeegiocaaaaaaaaaaaahaaaaaa
+fkaaaaadaagabaaaaaaaaaaafkaaaaadaagabaaaabaaaaaafibiaaaeaahabaaa
+aaaaaaaaffffaaaafibiaaaeaahabaaaabaaaaaaffffaaaagcbaaaaddcbabaaa
+abaaaaaagcbaaaaddcbabaaaacaaaaaagfaaaaadpccabaaaaaaaaaaagiaaaaac
+afaaaaaaefaaaaajpcaabaaaaaaaaaaaegbabaaaabaaaaaaeghobaaaaaaaaaaa
+aagabaaaaaaaaaaaefaaaaajpcaabaaaabaaaaaaegbabaaaacaaaaaaeghobaaa
+abaaaaaaaagabaaaabaaaaaabnaaaaakhcaabaaaacaaaaaaegacbaaaabaaaaaa
+aceaaaaaaaaaaadpaaaaaadpaaaaaadpaaaaaaaadhaaaaaphcaabaaaadaaaaaa
+egacbaaaacaaaaaaaceaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaceaaaaa
+aaaaiadpaaaaiadpaaaaiadpaaaaaaaaabaaaaakhcaabaaaacaaaaaaegacbaaa
+acaaaaaaaceaaaaaaaaaiadpaaaaiadpaaaaiadpaaaaaaaaaaaaaaahhcaabaaa
+aeaaaaaaegacbaaaabaaaaaaegacbaaaabaaaaaadiaaaaahhcaabaaaadaaaaaa
+egacbaaaadaaaaaaegacbaaaaeaaaaaadiaaaaahhcaabaaaadaaaaaaegacbaaa
+aaaaaaaaegacbaaaadaaaaaaaaaaaaalhcaabaaaaaaaaaaaegacbaiaebaaaaaa
+aaaaaaaaaceaaaaaaaaaiadpaaaaiadpaaaaiadpaaaaaaaaaaaaaaakhcaabaaa
+aeaaaaaaegacbaaaabaaaaaaaceaaaaaaaaaaalpaaaaaalpaaaaaalpaaaaaaaa
+dcaaaabahcaabaaaaeaaaaaaegacbaiaebaaaaaaaeaaaaaaaceaaaaaaaaaaaea
+aaaaaaeaaaaaaaeaaaaaaaaaaceaaaaaaaaaiadpaaaaiadpaaaaiadpaaaaaaaa
+dcaaaaanhcaabaaaaaaaaaaaegacbaiaebaaaaaaaeaaaaaaegacbaaaaaaaaaaa
+aceaaaaaaaaaiadpaaaaiadpaaaaiadpaaaaaaaadcaaaaajhcaabaaaaaaaaaaa
+egacbaaaacaaaaaaegacbaaaaaaaaaaaegacbaaaadaaaaaaaaaaaaaihcaabaaa
+aaaaaaaaegacbaiaebaaaaaaabaaaaaaegacbaaaaaaaaaaadcaaaaakhccabaaa
+aaaaaaaaagiacaaaaaaaaaaaagaaaaaaegacbaaaaaaaaaaaegacbaaaabaaaaaa
+dgaaaaaficcabaaaaaaaaaaadkaabaaaabaaaaaadoaaaaabejfdeheogiaaaaaa
+adaaaaaaaiaaaaaafaaaaaaaaaaaaaaaabaaaaaaadaaaaaaaaaaaaaaapaaaaaa
+fmaaaaaaaaaaaaaaaaaaaaaaadaaaaaaabaaaaaaadadaaaafmaaaaaaabaaaaaa
+aaaaaaaaadaaaaaaacaaaaaaadadaaaafdfgfpfagphdgjhegjgpgoaafeeffied
+epepfceeaaklklklepfdeheocmaaaaaaabaaaaaaaiaaaaaacaaaaaaaaaaaaaaa
+aaaaaaaaadaaaaaaaaaaaaaaapaaaaaafdfgfpfegbhcghgfheaaklkl"
+}
+}
+ }
+ Pass {
+  ZTest Always
+  ZWrite Off
+  Cull Off
+  Fog { Mode Off }
+  ColorMask RGB
+  GpuProgramID 266405
+Program "vp" {
+SubProgram "opengl " {
+"!!GLSL
+#ifdef VERTEX
+
+uniform vec4 _UV_Transform;
+varying vec2 xlv_TEXCOORD0;
+varying vec2 xlv_TEXCOORD0_1;
+void main ()
+{
+  vec2 tmpvar_1;
+  tmpvar_1.x = dot (gl_MultiTexCoord0.xy, _UV_Transform.xy);
+  tmpvar_1.y = dot (gl_MultiTexCoord0.xy, _UV_Transform.zw);
+  gl_Position = (gl_ModelViewProjectionMatrix * gl_Vertex);
+  xlv_TEXCOORD0 = tmpvar_1;
+  xlv_TEXCOORD0_1 = gl_MultiTexCoord0.xy;
+}
+
+
+#endif
+#ifdef FRAGMENT
+uniform sampler2D _Overlay;
+uniform sampler2D _MainTex;
+varying vec2 xlv_TEXCOORD0;
+varying vec2 xlv_TEXCOORD0_1;
+void main ()
+{
+  vec4 tmpvar_1;
+  tmpvar_1 = texture2D (_Overlay, xlv_TEXCOORD0);
+  gl_FragData[0] = mix (texture2D (_MainTex, xlv_TEXCOORD0_1), tmpvar_1, tmpvar_1.wwww);
+}
+
+
+#endif
+"
+}
+SubProgram "d3d9 " {
+Bind "vertex" Vertex
+Bind "texcoord" TexCoord0
+Matrix 0 [glstate_matrix_mvp]
+Vector 4 [_MainTex_TexelSize]
+Vector 5 [_UV_Transform]
+"vs_2_0
+def c6, 0, -2, 1, 0
+dcl_position v0
+dcl_texcoord v1
+dp4 oPos.x, c0, v0
+dp4 oPos.y, c1, v0
+dp4 oPos.z, c2, v0
+dp4 oPos.w, c3, v0
+mul r0, v1.xyxy, c5
+add oT0.x, r0.y, r0.x
+add r0.x, r0.w, r0.z
+mad r0.y, r0.x, c6.y, c6.z
+mov r1.x, c6.x
+slt r0.z, c4.y, r1.x
+mad oT0.y, r0.z, r0.y, r0.x
+mov oT1.xy, v1
+
+"
+}
+SubProgram "d3d11 " {
+Bind "vertex" Vertex
+Bind "texcoord" TexCoord0
+ConstBuffer "$Globals" 144
+Vector 112 [_MainTex_TexelSize]
+Vector 128 [_UV_Transform]
+ConstBuffer "UnityPerDraw" 336
+Matrix 0 [glstate_matrix_mvp]
+BindCB  "$Globals" 0
+BindCB  "UnityPerDraw" 1
+"vs_4_0
+eefiecedlgdfbopgbcccnncgkfbjalhplaofkjejabaaaaaalmacaaaaadaaaaaa
+cmaaaaaaiaaaaaaapaaaaaaaejfdeheoemaaaaaaacaaaaaaaiaaaaaadiaaaaaa
+aaaaaaaaaaaaaaaaadaaaaaaaaaaaaaaapapaaaaebaaaaaaaaaaaaaaaaaaaaaa
+adaaaaaaabaaaaaaadadaaaafaepfdejfeejepeoaafeeffiedepepfceeaaklkl
+epfdeheogiaaaaaaadaaaaaaaiaaaaaafaaaaaaaaaaaaaaaabaaaaaaadaaaaaa
+aaaaaaaaapaaaaaafmaaaaaaaaaaaaaaaaaaaaaaadaaaaaaabaaaaaaadamaaaa
+fmaaaaaaabaaaaaaaaaaaaaaadaaaaaaacaaaaaaadamaaaafdfgfpfagphdgjhe
+gjgpgoaafeeffiedepepfceeaaklklklfdeieefcmeabaaaaeaaaabaahbaaaaaa
+fjaaaaaeegiocaaaaaaaaaaaajaaaaaafjaaaaaeegiocaaaabaaaaaaaeaaaaaa
+fpaaaaadpcbabaaaaaaaaaaafpaaaaaddcbabaaaabaaaaaaghaaaaaepccabaaa
+aaaaaaaaabaaaaaagfaaaaaddccabaaaabaaaaaagfaaaaaddccabaaaacaaaaaa
+giaaaaacabaaaaaadiaaaaaipcaabaaaaaaaaaaafgbfbaaaaaaaaaaaegiocaaa
+abaaaaaaabaaaaaadcaaaaakpcaabaaaaaaaaaaaegiocaaaabaaaaaaaaaaaaaa
+agbabaaaaaaaaaaaegaobaaaaaaaaaaadcaaaaakpcaabaaaaaaaaaaaegiocaaa
+abaaaaaaacaaaaaakgbkbaaaaaaaaaaaegaobaaaaaaaaaaadcaaaaakpccabaaa
+aaaaaaaaegiocaaaabaaaaaaadaaaaaapgbpbaaaaaaaaaaaegaobaaaaaaaaaaa
+dbaaaaaibcaabaaaaaaaaaaabkiacaaaaaaaaaaaahaaaaaaabeaaaaaaaaaaaaa
+apaaaaaiccaabaaaaaaaaaaaegbabaaaabaaaaaaogikcaaaaaaaaaaaaiaaaaaa
+aaaaaaaiecaabaaaaaaaaaaabkaabaiaebaaaaaaaaaaaaaaabeaaaaaaaaaiadp
+dhaaaaajcccabaaaabaaaaaaakaabaaaaaaaaaaackaabaaaaaaaaaaabkaabaaa
+aaaaaaaaapaaaaaibccabaaaabaaaaaaegbabaaaabaaaaaaegiacaaaaaaaaaaa
+aiaaaaaadgaaaaafdccabaaaacaaaaaaegbabaaaabaaaaaadoaaaaab"
+}
+SubProgram "d3d11_9x " {
+Bind "vertex" Vertex
+Bind "texcoord" TexCoord0
+ConstBuffer "$Globals" 144
+Vector 112 [_MainTex_TexelSize]
+Vector 128 [_UV_Transform]
+ConstBuffer "UnityPerDraw" 336
+Matrix 0 [glstate_matrix_mvp]
+BindCB  "$Globals" 0
+BindCB  "UnityPerDraw" 1
+"vs_4_0_level_9_1
+eefiecedifhgeipbogehnlhmokeofkkpnnjddapcabaaaaaacmaeaaaaaeaaaaaa
+daaaaaaajmabaaaagiadaaaalmadaaaaebgpgodjgeabaaaageabaaaaaaacpopp
+ceabaaaaeaaaaaaaacaaceaaaaaadmaaaaaadmaaaaaaceaaabaadmaaaaaaahaa
+acaaabaaaaaaaaaaabaaaaaaaeaaadaaaaaaaaaaaaaaaaaaaaacpoppfbaaaaaf
+ahaaapkaaaaaaaaaaaaaaamaaaaaiadpaaaaaaaabpaaaaacafaaaaiaaaaaapja
+bpaaaaacafaaabiaabaaapjaafaaaaadaaaaapiaabaaeejaacaaoekaacaaaaad
+aaaaaboaaaaaffiaaaaaaaiaacaaaaadaaaaabiaaaaappiaaaaakkiaaeaaaaae
+aaaaaciaaaaaaaiaahaaffkaahaakkkaabaaaaacabaaabiaahaaaakaamaaaaad
+aaaaaeiaabaaffkaabaaaaiaaeaaaaaeaaaaacoaaaaakkiaaaaaffiaaaaaaaia
+afaaaaadaaaaapiaaaaaffjaaeaaoekaaeaaaaaeaaaaapiaadaaoekaaaaaaaja
+aaaaoeiaaeaaaaaeaaaaapiaafaaoekaaaaakkjaaaaaoeiaaeaaaaaeaaaaapia
+agaaoekaaaaappjaaaaaoeiaaeaaaaaeaaaaadmaaaaappiaaaaaoekaaaaaoeia
+abaaaaacaaaaammaaaaaoeiaabaaaaacabaaadoaabaaoejappppaaaafdeieefc
+meabaaaaeaaaabaahbaaaaaafjaaaaaeegiocaaaaaaaaaaaajaaaaaafjaaaaae
+egiocaaaabaaaaaaaeaaaaaafpaaaaadpcbabaaaaaaaaaaafpaaaaaddcbabaaa
+abaaaaaaghaaaaaepccabaaaaaaaaaaaabaaaaaagfaaaaaddccabaaaabaaaaaa
+gfaaaaaddccabaaaacaaaaaagiaaaaacabaaaaaadiaaaaaipcaabaaaaaaaaaaa
+fgbfbaaaaaaaaaaaegiocaaaabaaaaaaabaaaaaadcaaaaakpcaabaaaaaaaaaaa
+egiocaaaabaaaaaaaaaaaaaaagbabaaaaaaaaaaaegaobaaaaaaaaaaadcaaaaak
+pcaabaaaaaaaaaaaegiocaaaabaaaaaaacaaaaaakgbkbaaaaaaaaaaaegaobaaa
+aaaaaaaadcaaaaakpccabaaaaaaaaaaaegiocaaaabaaaaaaadaaaaaapgbpbaaa
+aaaaaaaaegaobaaaaaaaaaaadbaaaaaibcaabaaaaaaaaaaabkiacaaaaaaaaaaa
+ahaaaaaaabeaaaaaaaaaaaaaapaaaaaiccaabaaaaaaaaaaaegbabaaaabaaaaaa
+ogikcaaaaaaaaaaaaiaaaaaaaaaaaaaiecaabaaaaaaaaaaabkaabaiaebaaaaaa
+aaaaaaaaabeaaaaaaaaaiadpdhaaaaajcccabaaaabaaaaaaakaabaaaaaaaaaaa
+ckaabaaaaaaaaaaabkaabaaaaaaaaaaaapaaaaaibccabaaaabaaaaaaegbabaaa
+abaaaaaaegiacaaaaaaaaaaaaiaaaaaadgaaaaafdccabaaaacaaaaaaegbabaaa
+abaaaaaadoaaaaabejfdeheoemaaaaaaacaaaaaaaiaaaaaadiaaaaaaaaaaaaaa
+aaaaaaaaadaaaaaaaaaaaaaaapapaaaaebaaaaaaaaaaaaaaaaaaaaaaadaaaaaa
+abaaaaaaadadaaaafaepfdejfeejepeoaafeeffiedepepfceeaaklklepfdeheo
+giaaaaaaadaaaaaaaiaaaaaafaaaaaaaaaaaaaaaabaaaaaaadaaaaaaaaaaaaaa
+apaaaaaafmaaaaaaaaaaaaaaaaaaaaaaadaaaaaaabaaaaaaadamaaaafmaaaaaa
+abaaaaaaaaaaaaaaadaaaaaaacaaaaaaadamaaaafdfgfpfagphdgjhegjgpgoaa
+feeffiedepepfceeaaklklkl"
+}
+}
+Program "fp" {
+SubProgram "opengl " {
+"!!GLSL"
+}
+SubProgram "d3d9 " {
+SetTexture 0 [_Overlay] 2D 0
+SetTexture 1 [_MainTex] 2D 1
+"ps_2_0
+dcl t0.xy
+dcl t1.xy
+dcl_2d s0
+dcl_2d s1
+texld_pp r0, t0, s0
+texld r1, t1, s1
+lrp_pp r2, r0.w, r0, r1
+mov_pp oC0, r2
+
+"
+}
+SubProgram "d3d11 " {
+SetTexture 0 [_Overlay] 2D 0
+SetTexture 1 [_MainTex] 2D 1
+"ps_4_0
+eefiecedpemkilkkjleidjmkmbhpolfoibeemjofabaaaaaaneabaaaaadaaaaaa
+cmaaaaaajmaaaaaanaaaaaaaejfdeheogiaaaaaaadaaaaaaaiaaaaaafaaaaaaa
+aaaaaaaaabaaaaaaadaaaaaaaaaaaaaaapaaaaaafmaaaaaaaaaaaaaaaaaaaaaa
+adaaaaaaabaaaaaaadadaaaafmaaaaaaabaaaaaaaaaaaaaaadaaaaaaacaaaaaa
+adadaaaafdfgfpfagphdgjhegjgpgoaafeeffiedepepfceeaaklklklepfdeheo
+cmaaaaaaabaaaaaaaiaaaaaacaaaaaaaaaaaaaaaaaaaaaaaadaaaaaaaaaaaaaa
+apaaaaaafdfgfpfegbhcghgfheaaklklfdeieefcpmaaaaaaeaaaaaaadpaaaaaa
+fkaaaaadaagabaaaaaaaaaaafkaaaaadaagabaaaabaaaaaafibiaaaeaahabaaa
+aaaaaaaaffffaaaafibiaaaeaahabaaaabaaaaaaffffaaaagcbaaaaddcbabaaa
+abaaaaaagcbaaaaddcbabaaaacaaaaaagfaaaaadpccabaaaaaaaaaaagiaaaaac
+adaaaaaaefaaaaajpcaabaaaaaaaaaaaegbabaaaabaaaaaaeghobaaaaaaaaaaa
+aagabaaaaaaaaaaaefaaaaajpcaabaaaabaaaaaaegbabaaaacaaaaaaeghobaaa
+abaaaaaaaagabaaaabaaaaaaaaaaaaaipcaabaaaacaaaaaaegaobaaaaaaaaaaa
+egaobaiaebaaaaaaabaaaaaadcaaaaajpccabaaaaaaaaaaapgapbaaaaaaaaaaa
+egaobaaaacaaaaaaegaobaaaabaaaaaadoaaaaab"
+}
+SubProgram "d3d11_9x " {
+SetTexture 0 [_Overlay] 2D 0
+SetTexture 1 [_MainTex] 2D 1
+"ps_4_0_level_9_1
+eefiecedndnignfeolnljockiodikeccfoiikchfabaaaaaaieacaaaaaeaaaaaa
+daaaaaaanmaaaaaaoaabaaaafaacaaaaebgpgodjkeaaaaaakeaaaaaaaaacpppp
+hiaaaaaacmaaaaaaaaaacmaaaaaacmaaaaaacmaaacaaceaaaaaacmaaaaaaaaaa
+abababaaaaacppppbpaaaaacaaaaaaiaaaaaadlabpaaaaacaaaaaaiaabaaadla
+bpaaaaacaaaaaajaaaaiapkabpaaaaacaaaaaajaabaiapkaecaaaaadaaaacpia
+aaaaoelaaaaioekaecaaaaadabaaapiaabaaoelaabaioekabcaaaaaeacaacpia
+aaaappiaaaaaoeiaabaaoeiaabaaaaacaaaicpiaacaaoeiappppaaaafdeieefc
+pmaaaaaaeaaaaaaadpaaaaaafkaaaaadaagabaaaaaaaaaaafkaaaaadaagabaaa
+abaaaaaafibiaaaeaahabaaaaaaaaaaaffffaaaafibiaaaeaahabaaaabaaaaaa
+ffffaaaagcbaaaaddcbabaaaabaaaaaagcbaaaaddcbabaaaacaaaaaagfaaaaad
+pccabaaaaaaaaaaagiaaaaacadaaaaaaefaaaaajpcaabaaaaaaaaaaaegbabaaa
+abaaaaaaeghobaaaaaaaaaaaaagabaaaaaaaaaaaefaaaaajpcaabaaaabaaaaaa
+egbabaaaacaaaaaaeghobaaaabaaaaaaaagabaaaabaaaaaaaaaaaaaipcaabaaa
+acaaaaaaegaobaaaaaaaaaaaegaobaiaebaaaaaaabaaaaaadcaaaaajpccabaaa
+aaaaaaaapgapbaaaaaaaaaaaegaobaaaacaaaaaaegaobaaaabaaaaaadoaaaaab
+ejfdeheogiaaaaaaadaaaaaaaiaaaaaafaaaaaaaaaaaaaaaabaaaaaaadaaaaaa
+aaaaaaaaapaaaaaafmaaaaaaaaaaaaaaaaaaaaaaadaaaaaaabaaaaaaadadaaaa
+fmaaaaaaabaaaaaaaaaaaaaaadaaaaaaacaaaaaaadadaaaafdfgfpfagphdgjhe
+gjgpgoaafeeffiedepepfceeaaklklklepfdeheocmaaaaaaabaaaaaaaiaaaaaa
+caaaaaaaaaaaaaaaaaaaaaaaadaaaaaaaaaaaaaaapaaaaaafdfgfpfegbhcghgf
+heaaklkl"
+}
+}
+ }
+}
+Fallback Off
+}
